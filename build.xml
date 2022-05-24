@@ -1,0 +1,85 @@
+<project name="AnonymizerIndexChecker" default="all" basedir=".">
+
+	<property name="name" value="AnonymizerIndexChecker"/>
+	<property name="build" value="${basedir}/build"/>
+	<property name="source" value="${basedir}/source"/>
+	<property name="files" value="${source}/files"/>
+	<property name="java" value="${source}/java"/>
+	<property name="libraries" value="libraries"/>
+	<property name="products" value="${basedir}/products"/>
+	<property name="anonymizer" value="/Development/Anonymizer"/>
+	<property name="ctp" value="/Development/CTP"/>
+	<property name="directory" value="org/rsna/aic"/>
+	<property name="package" value="org.rsna.aic"/>
+	<property name="desc" value="Anonymizer Index Checker"/>
+
+	<path id="classpath">
+		<pathelement location="${anonymizer}/libraries/libraries/CTP.jar"/>
+		<pathelement location="${anonymizer}/libraries/libraries/util.jar"/>
+		<pathelement location="${anonymizer}/libraries/libraries/jdbm.jar"/>
+		<pathelement location="${anonymizer}/libraries/libraries/log4j.jar"/>
+		<pathelement location="${anonymizer}/products/Anonymizer.jar"/>
+	</path>
+
+	<target name="clean">
+		<delete dir="${build}" failonerror="false"/>
+	</target>
+
+	<target name="init">
+		<mkdir dir="${build}"/>
+		<tstamp>
+			<format property="today" pattern="dd-MMMM-yyyy"/>
+			<format property="now" pattern="HH:mm:ss"/>
+		</tstamp>
+		<echo message="Time now ${now}"/>
+		<mkdir dir="${build}"/>
+		<mkdir dir="${products}"/>
+	</target>
+
+	<target name="getLibraryJars">
+		<copy overwrite="true" todir="${libraries}">
+			<fileset dir="${ctp}/libraries">
+				<include name="log4j.jar"/>
+				<include name="util.jar"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="jar" depends="clean, init, getLibraryJars">
+		<javac destdir="${build}"
+				optimize="on"
+				classpathref="classpath"
+				includeantruntime="false"
+				debug="true" debuglevel="lines,vars,source">
+			<src path="${java}"/>
+			<!--<compilerarg value="-Xlint:unchecked"/>-->
+		</javac>
+		<jar jarfile="${products}/${name}.jar">
+			<manifest>
+				<attribute name="Main-Class" value="${package}.${name}"/>
+				<attribute name="Implementation-Version" value="${today} @ ${now}"/>
+            	<attribute name="Description" value="${desc}"/>
+	            <attribute name="Class-Path"
+	            	value="Anonymizer.jar libraries/util.jar libraries/util.jar libraries/jdbm.jar libraries/log4j.jar"/>
+			</manifest>
+			<fileset dir="${build}" includes="${directory}/**"/>
+		</jar>
+	</target>
+
+	<target name="deploy">
+		<copy overwrite="true" todir="E:/AnonTest/Anonymizer">
+			<fileset dir="${products}">
+				<include name="${name}.jar"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="all" depends="jar, deploy">
+		<tstamp>
+			<format property="today" pattern="dd-MMMM-yyyy"/>
+			<format property="now" pattern="HH:mm:ss"/>
+		</tstamp>
+		<echo message="Time now ${now}"/>
+	</target>
+
+</project>
